@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JZ Store - Versi�n Suprema</title>
+    <!-- Google Fonts & Material Icons CDN -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        /* ==========================================================================
+           1. ESTILOS ARQUITECT�NICOS (GOOGLE PLAY STORE DARK COMPLETO)
+           ========================================================================== */
+        :root {
+            --bg-main: #1a1a1b;
+            --bg-surface: #202124;
+            --bg-search: #3c4043;
+            --bg-card: #2d2f31;
+            --bg-card-hover: #35373a;
+            --text-primary: #e8eaed;
+            --text-secondary: #9aa0a6;
+            --accent-blue: #8ab4f8;
+            --accent-green: #34a853;
+            --accent-green-hover: #2d9247;
+            --border-color: #3c4043;
+            --danger-color: #f28b82;
+            --toast-bg: #323232;
+            --gold-color: #fbbc05;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-main); color: var(--text-primary); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        
+        .hidden { display: none !important; }
+        .disabled { opacity: 0.5; pointer-events: none; }
+
+        /* ==========================================================================
+           2. NAVBAR SUPERIOR
+           ========================================================================== */
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background-color: var(--bg-surface); border-bottom: 1px solid var(--border-color); height: 64px; position: sticky; top: 0; z-index: 100; }
+        .nav-left { display: flex; align-items: center; gap: 12px; }
+        .menu-toggle { background: none; border: none; color: var(--text-primary); cursor: pointer; display: block; }
+        .brand-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .brand-logo img { height: 40px; width: 40px; object-fit: contain; }
+        .brand-name { font-size: 22px; font-weight: 400; color: var(--text-primary); }
+        .nav-center { flex: 0 1 500px; display: flex; align-items: center; position: relative; margin: 0 16px; }
+        .search-icon { position: absolute; left: 16px; color: var(--text-secondary); pointer-events: none; }
+        .clear-search-icon { position: absolute; right: 16px; color: var(--text-secondary); cursor: pointer; }
+        .search-input { width: 100%; height: 48px; background-color: var(--bg-search); border: none; border-radius: 24px; padding: 0 48px 0 52px; color: white; font-size: 16px; outline: none; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        
+        .btn-header { border: none; border-radius: 24px; padding: 10px 18px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: background-color 0.2s; }
+        .btn-auth-ui { background-color: transparent; color: var(--accent-blue); border: 1px solid var(--border-color); }
+        .btn-auth-ui:hover { background-color: rgba(138, 180, 248, 0.08); }
+        
+        .profile-container { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border-color); }
+        .user-avatar { width: 32px; height: 32px; border-radius: 50%; background-color: var(--bg-search); color: var(--text-primary); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; border: 2px solid transparent; }
+        .user-avatar.admin-active { border-color: var(--accent-green); background-color: var(--accent-green); color: white; }
+        .user-edition-badge { font-size: 11px; font-weight: 700; color: var(--gold-color); background: rgba(251, 188, 5, 0.1); padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(251, 188, 5, 0.3); }
+
+        /* ==========================================================================
+           3. SIDEBAR FLUIDO
+           ========================================================================== */
+        .app-body { display: flex; flex: 1; overflow: hidden; position: relative; }
+        .sidebar { width: 280px; background-color: var(--bg-surface); padding: 12px 0; display: flex; flex-direction: column; border-right: 1px solid var(--border-color); transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); z-index: 95; position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-100%); }
+        .sidebar.open { transform: translateX(0); }
+        
+        .sidebar-item { display: flex; align-items: center; gap: 24px; padding: 12px 24px; color: var(--text-primary); text-decoration: none; font-size: 14px; font-weight: 500; cursor: pointer; border-radius: 0 24px 24px 0; margin-right: 12px; transition: background-color 0.15s; }
+        .sidebar-item:hover { background-color: var(--bg-search); }
+        .sidebar-item.active { background-color: #2a3b4e; color: var(--accent-blue); }
+        .sidebar-item.active .material-icons { color: var(--accent-blue); }
+        .sidebar-item .material-icons { color: var(--text-secondary); }
+        .sidebar-divider { height: 1px; background-color: var(--border-color); margin: 8px 0; }
+
+        .main-content { flex: 1; padding: 24px; overflow-y: auto; background-color: var(--bg-main); transition: margin-left 0.25s; }
+
+        /* ==========================================================================
+           4. CRON�METRO DE YOUTUBE
+           ========================================================================== */
+        .yt-countdown-banner { background: linear-gradient(135deg, #1e1e24 0%, #ff0000 300%); border: 1px solid #ff3333; border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .yt-info { display: flex; align-items: center; gap: 12px; }
+        .yt-info .material-icons { color: #ff0000; font-size: 36px; }
+        .countdown-timer { display: flex; gap: 8px; font-size: 18px; font-weight: 700; color: #fff; }
+        .time-box { background: rgba(0,0,0,0.4); padding: 6px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); text-align: center; min-width: 45px; }
+        .time-box span { display: block; font-size: 10px; color: var(--text-secondary); font-weight: 400; text-transform: uppercase; margin-top: 2px; }
+
+        /* ==========================================================================
+           5. TARJETAS DE APKS
+           ========================================================================== */
+        .section-container { margin-bottom: 40px; }
+        .section-header { margin-bottom: 20px; }
+        .section-title { font-size: 18px; font-weight: 500; color: var(--text-primary); }
+        .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
+        
+        .app-card { background-color: var(--bg-card); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; position: relative; border: 1px solid transparent; }
+        .app-card:hover { background-color: var(--bg-card-hover); border-color: var(--border-color); }
+        .app-card-top { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+        .app-card-icon { width: 64px; height: 64px; border-radius: 14px; object-fit: cover; background-color: var(--bg-search); }
+        .app-card-meta { display: flex; flex-direction: column; overflow: hidden; }
+        .app-card-title { font-size: 16px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-card-category { font-size: 12px; color: var(--text-secondary); margin-top: 2px; text-transform: capitalize; }
+        .app-card-stats { display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+        .app-rating { display: flex; align-items: center; gap: 2px; color: var(--text-primary); }
+        .app-rating .material-icons { font-size: 14px; color: #fbbc05; }
+        .app-card-bottom { margin-top: auto; display: flex; gap: 8px; }
+        .btn-download { flex: 1; background-color: #3c4043; color: var(--accent-blue); border: none; border-radius: 18px; height: 36px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+        .btn-delete-app { background-color: transparent; color: var(--danger-color); border: 1px solid var(--border-color); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        /* ==========================================================================
+           6. PANEL DE CONTROL ADMINISTRATIVO
+           ========================================================================== */
+        .admin-dashboard-panel { display: flex; flex-direction: column; gap: 24px; animation: fadeIn 0.2s ease; }
+        .admin-card-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .admin-box { background-color: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+        .admin-box-title { font-size: 15px; font-weight: 500; color: var(--accent-blue); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        
+        .admin-input-group { display: flex; gap: 8px; }
+        .admin-btn { background-color: var(--bg-search); color: white; border: none; border-radius: 6px; padding: 10px 14px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background-color 0.2s; }
+        .admin-btn:hover { background-color: #4f5357; }
+        .admin-btn.danger { background-color: rgba(242, 139, 130, 0.15); color: var(--danger-color); border: 1px solid rgba(242, 139, 130, 0.3); }
+        .admin-btn.danger:hover { background-color: rgba(242, 139, 130, 0.25); }
+        .admin-btn.success { background-color: var(--accent-green); }
+        .admin-btn.success:hover { background-color: var(--accent-green-hover); }
+
+        /* ==========================================================================
+           7. MODALES (SOPORTE M�VIL OPTIMIZADO)
+           ========================================================================== */
+        .modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.7); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
+        .modal-backdrop.active { opacity: 1; pointer-events: auto; }
+        .modal-window { background-color: var(--bg-surface); border-radius: 16px; width: 100%; max-width: 460px; box-shadow: 0 12px 24px rgba(0,0,0,0.6); border: 1px solid var(--border-color); overflow: hidden; transform: scale(0.95); transition: transform 0.2s ease; }
+        .modal-backdrop.active .modal-window { transform: scale(1); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border-color); }
+        .modal-close-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; }
+        .modal-form { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+        .form-input-text { height: 44px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 0 12px; color: white; font-size: 14px; outline: none; }
+        .form-input-text:focus { border-color: var(--accent-blue); }
+        
+        .file-dropzone { border: 2px dashed var(--border-color); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; background-color: var(--bg-main); }
+        .file-preview-row { display: flex; align-items: center; justify-content: space-between; background-color: var(--bg-main); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 13px; }
+        .progress-container { width: 100%; background-color: var(--bg-main); border-radius: 4px; height: 6px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--accent-green); width: 0%; }
+        .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 10px; }
+        .btn-cancel { background: none; border: 1px solid var(--border-color); color: var(--text-primary); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+        .btn-submit { background-color: var(--accent-green); color: white; border: none; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+
+        .auth-toggle-text { font-size: 13px; color: var(--text-secondary); text-align: center; margin-top: 8px; cursor: pointer; }
+        .auth-toggle-text span { color: var(--accent-blue); font-weight: 500; text-decoration: underline; }
+
+        .apk-alert-banner { display: flex; gap: 16px; background-color: #2b303a; border: 1px solid var(--accent-blue); padding: 16px; border-radius: 12px; margin-bottom: 24px; position: relative; animation: slideDown 0.3s ease; }
+        .apk-alert-close { position: absolute; top: 12px; right: 12px; color: var(--text-secondary); cursor: pointer; }
+
+        #toast-container { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 1000; }
+        .toast { background-color: var(--toast-bg); color: var(--text-primary); padding: 12px 24px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.4); font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; color: var(--text-secondary); gap: 12px; }
+
+        @media (max-width: 768px) {
+            .nav-center { display: none; }
+            .apps-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+            .app-card-top { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .app-card-icon { width: 52px; height: 52px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR SIN CARGADOR -->
+    <header class="navbar">
+        <div class="nav-left">
+            <button class="menu-toggle" id="menu-btn"><span class="material-icons">menu</span></button>
+            <div class="brand-logo" id="brand-home">
+                <img src="https://www.gstatic.com/images/branding/product/2x/gg_play_store_96dp.png" alt="Logo">
+                <span class="brand-name">JZ Store</span>
+            </div>
+        </div>
+
+        <div class="nav-center">
+            <span class="material-icons search-icon">search</span>
+            <input type="text" id="search-engine" class="search-input" placeholder="Buscar aplicaciones o juegos...">
+            <span class="material-icons clear-search-icon hidden" id="clear-search">close</span>
+        </div>
+
+        <div class="nav-right">
+            <button id="auth-ui-btn" class="btn-header btn-auth-ui">
+                <span class="material-icons">account_circle</span><span>Iniciar Sesi�n</span>
+            </button>
+            <div class="profile-container hidden" id="profile-box">
+                <div id="user-badge" class="user-avatar">?</div>
+                <div id="user-edition-id" class="user-edition-badge">Cargando...</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-body">
+        <!-- SECCI�N LATERAL -->
+        <aside class="sidebar" id="app-sidebar">
+            <div class="sidebar-item active" data-view="inicio"><span class="material-icons">home</span><span>Inicio</span></div>
+            <div class="sidebar-item" data-view="juegos"><span class="material-icons">sports_esports</span><span>Juegos</span></div>
+            <div class="sidebar-item" data-view="apps"><span class="material-icons">apps</span><span>Apps</span></div>
+            
+            <div id="sidebar-admin-section" class="hidden">
+                <div class="sidebar-divider"></div>
+                <div class="sidebar-item" data-view="admin-panel" style="color:var(--accent-green);"><span class="material-icons" style="color:var(--accent-green);">dashboard</span><span>Panel de Control</span></div>
+                <div class="sidebar-item" id="sidebar-upload-trigger"><span class="material-icons">cloud_upload</span><span>Subir Nueva APK</span></div>
+            </div>
+        </aside>
+
+        <!-- PANEL CENTRAL -->
+        <main class="main-content" id="main-scroll-area">
+            <div id="dynamic-alert-wrapper"></div>
+
+            <!-- CONTADOR DE SEGUIDORES YOUTUBE -->
+            <div class="yt-countdown-banner id-countdown-section hidden" id="yt-banner">
+                <div class="yt-info">
+                    <span class="material-icons">play_circle_filled</span>
+                    <div>
+                        <h4 style="font-size:15px; font-weight:500;">�Pr�ximo Video de JZ MODS OFC!</h4>
+                        <p id="yt-video-title" style="font-size:12px; color:var(--text-secondary);">Sintonizando estreno...</p>
+                    </div>
+                </div>
+                <div class="countdown-timer">
+                    <div class="time-box"><div id="cd-hours">00</div><span>Horas</span></div>
+                    <div class="time-box"><div id="cd-minutes">00</div><span>Min</span></div>
+                    <div class="time-box"><div id="cd-seconds">00</div><span>Seg</span></div>
+                </div>
+            </div>
+
+            <!-- ENTORNO REPOSITORIO -->
+            <div id="store-view-wrapper">
+                <div class="section-container" id="container-rec">
+                    <div class="section-header"><h2 class="section-title">Recomendaciones para ti</h2></div>
+                    <div id="recommended-grid" class="apps-grid"></div>
+                </div>
+                <div class="section-container">
+                    <div class="section-header"><h2 class="section-title" id="grid-main-title">Todo el repositorio</h2></div>
+                    <div id="main-apps-grid" class="apps-grid"></div>
+                </div>
+            </div>
+
+            <!-- PANEL DE CONTROL DUE�O SUPREMO -->
+            <div id="admin-view-wrapper" class="admin-dashboard-panel hidden">
+                <h2 style="font-weight:400; font-size:22px; border-bottom:1px solid var(--border-color); padding-bottom:12px;">Consola de Mando Administrativa</h2>
+                
+                <div class="admin-card-row">
+                    <div class="admin-box">
+                        <div class="admin-box-title"><span class="material-icons">person_remove</span>Eliminar Cuentas</div>
+                        <div class="admin-input-group">
+                            <input type="text" id="adm-del-username" class="form-input-text" style="flex:1;" placeholder="correo@usuario.com">
+                            <button id="adm-btn-del-user" class="admin-btn danger">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-box">
+                        <div class="admin-box-title"><span class="material-icons">add_alert</span>Lanzar Aviso APK Global</div>
+                        <input type="text" id="adm-alert-title" class="form-input-text" placeholder="T�tulo del Aviso">
+                        <input type="text" id="adm-alert-desc" class="form-input-text" placeholder="Descripci�n breve...">
+                        <button id="adm-btn-send-alert" class="admin-btn success">Publicar Aviso</button>
+                    </div>
+
+                    <div class="admin-box">
+                        <div class="admin-box-title"><span class="material-icons">timer</span>Contador de Video (Minutos)</div>
+                        <div class="admin-input-group">
+                            <input type="number" id="adm-yt-minutes" class="form-input-text" style="flex:1;" placeholder="Ej: 45">
+                            <button id="adm-btn-set-countdown" class="admin-btn success">Iniciar</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-box">
+                        <div class="admin-box-title"><span class="material-icons">bolt</span>Mantenimiento de Servidor</div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <button id="adm-btn-force-reload" class="admin-btn danger" style="flex:1;"><span class="material-icons">refresh</span>Forzar Reinicio</button>
+                            <button id="adm-btn-massive-opt" class="admin-btn success" style="flex:1;"><span class="material-icons">phonelink_setup</span>Optimizar RAM</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE SUBIDA REMODELADO (M�VIL TOTAL ACCI�N) -->
+    <div class="modal-backdrop" id="upload-modal-backdrop">
+        <div class="modal-window">
+            <header class="modal-header">
+                <h3 class="modal-title">Publicar Binario APK</h3>
+                <button class="modal-close-btn" id="close-upload-x"><span class="material-icons">close</span></button>
+            </header>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Nombre de la Aplicaci�n</label>
+                    <input type="text" id="apk-title" class="form-input-text" placeholder="Ej: Free Fire JZ Mod">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categor�a</label>
+                    <select id="apk-category" class="form-input-text" style="background-color: var(--bg-main); color: white;">
+                        <option value="apps">Apps (Herramientas)</option>
+                        <option value="juegos">Juegos (Videojuegos)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Portada (Opcional)</label>
+                    <div class="file-dropzone" id="dropzone-icon"><span class="material-icons">add_photo_alternate</span><span id="txt-icon-status">Seleccionar Imagen</span><input type="file" id="file-icon" accept="image/*" class="hidden"></div>
+                    <div id="preview-icon-row" class="file-preview-row hidden"><span id="lbl-icon-name">Imagen Cargada</span><span class="material-icons" style="color:var(--accent-green)">check_circle</span></div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Archivo Binario (Requerido)</label>
+                    <div class="file-dropzone" id="dropzone-apk"><span class="material-icons">android</span><span id="txt-apk-status">Seleccionar Archivo .APK</span><input type="file" id="file-apk" accept=".apk" class="hidden"></div>
+                    <div id="preview-apk-row" class="file-preview-row hidden"><span id="lbl-apk-name">APK Listo</span><span class="material-icons" style="color:var(--accent-green)">check_circle</span></div>
+                </div>
+                
+                <div id="upload-progress-wrapper" class="form-group hidden">
+                    <div style="display:flex; justify-content:space-between; font-size:12px;"><span id="upload-stage-txt">Subiendo...</span><span id="upload-pct-txt">0%</span></div>
+                    <div class="progress-container"><div id="upload-progress-bar" class="progress-bar"></div></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="btn-close-upload">Cancelar</button>
+                    <button type="button" class="btn-submit" id="btn-force-publish">Publicar Ahora</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE ACCESO SEGURIZADO -->
+    <div class="modal-backdrop" id="auth-modal-backdrop">
+        <div class="modal-window">
+            <header class="modal-header">
+                <h3 id="auth-modal-title" style="font-weight:500;">Ingreso a JZ Store</h3>
+                <button class="modal-close-btn" id="close-auth-x"><span class="material-icons">close</span></button>
+            </header>
+            <form id="auth-login-form" class="modal-form">
+                <div class="form-group"><label class="form-label">Correo Electr�nico</label><input type="email" id="auth-email" class="form-input-text" required></div>
+                <div class="form-group"><label class="form-label">Contrase�a</label><input type="password" id="auth-pass" class="form-input-text" required></div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" id="btn-close-auth">Cancelar</button>
+                    <button type="submit" id="btn-auth-submit" class="btn-submit" style="background-color:var(--accent-blue);">Ingresar</button>
+                </div>
+                <div class="auth-toggle-text" id="auth-toggle-mode">�No tienes cuenta? <span id="auth-toggle-action">Reg�strate</span></div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <!-- INFRAESTRUCTURA FIREBASE MODULAR -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, onSnapshot, setDoc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDI9Vkl3dgvX0VKeBZOXuZKGhrOaNrSw-w",
+            authDomain: "acceso-a-login.firebaseapp.com",
+            projectId: "acceso-a-login",
+            storageBucket: "acceso-a-login.firebasestorage.app"
+        };
+
+        class Toast {
+            static show(m) {
+                const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = 'toast';
+                t.innerHTML = `<span class="material-icons" style="color:var(--accent-blue)">info</span><span>${m}</span>`;
+                c.appendChild(t); setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 200); }, 3000);
+            }
+        }
+
+        class JZStoreSupremo {
+            constructor() {
+                this.app = initializeApp(firebaseConfig);
+                this.auth = getAuth(this.app);
+                this.db = getFirestore(this.app);
+                this.storage = getStorage(this.app);
+
+                this.currentView = 'inicio';
+                this.searchQuery = '';
+                this.cachedApps = [];
+                this.isAdmin = false;
+                this.authMode = 'login';
+
+                this.initDOM();
+                this.bindEvents();
+                this.listenRealtimeTriggers();
+            }
+
+            initDOM() {
+                this.sidebar = document.getElementById('app-sidebar');
+                this.menuBtn = document.getElementById('menu-btn');
+                this.authUiBtn = document.getElementById('auth-ui-btn');
+                this.profileBox = document.getElementById('profile-box');
+                this.userBadge = document.getElementById('user-badge');
+                this.userEditionId = document.getElementById('user-edition-id');
+                this.searchInput = document.getElementById('search-engine');
+                this.clearSearch = document.getElementById('clear-search');
+                this.sidebarAdminSection = document.getElementById('sidebar-admin-section');
+                
+                this.storeView = document.getElementById('store-view-wrapper');
+                this.adminView = document.getElementById('admin-view-wrapper');
+                this.recGrid = document.getElementById('recommended-grid');
+                this.mainGrid = document.getElementById('main-apps-grid');
+                this.recContainer = document.getElementById('container-rec');
+                this.mainTitle = document.getElementById('grid-main-title');
+
+                this.authBackdrop = document.getElementById('auth-modal-backdrop');
+                this.uploadBackdrop = document.getElementById('upload-modal-backdrop');
+                this.authForm = document.getElementById('auth-login-form');
+
+                this.dropIcon = document.getElementById('dropzone-icon'); this.dropApk = document.getElementById('dropzone-apk');
+                this.fileIcon = document.getElementById('file-icon'); this.fileApk = document.getElementById('file-apk');
+            }
+
+            bindEvents() {
+                this.menuBtn.onclick = () => this.sidebar.classList.toggle('open');
+
+                document.querySelectorAll('.sidebar-item').forEach(item => {
+                    item.onclick = (e) => {
+                        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        this.currentView = e.currentTarget.getAttribute('data-view');
+                        this.sidebar.classList.remove('open');
+                        this.changeViewEngine();
+                    };
+                });
+
+                document.getElementById('sidebar-upload-trigger').onclick = () => { this.sidebar.classList.remove('open'); this.uploadBackdrop.classList.add('active'); };
+
+                this.searchInput.oninput = (e) => {
+                    this.searchQuery = e.target.value.toLowerCase().trim();
+                    this.searchQuery ? this.clearSearch.classList.remove('hidden') : this.clearSearch.classList.add('hidden');
+                    this.renderStoreGrids();
+                };
+
+                this.authUiBtn.onclick = () => {
+                    if (this.auth.currentUser) {
+                        signOut(this.auth).then(() => Toast.show("Sesi�n Cerrada"));
+                    } else {
+                        this.authBackdrop.classList.add('active');
+                    }
+                };
+
+                document.getElementById('close-auth-x').onclick = document.getElementById('btn-close-auth').onclick = () => this.authBackdrop.classList.remove('active');
+                document.getElementById('close-upload-x').onclick = document.getElementById('btn-close-upload').onclick = () => { this.uploadBackdrop.classList.remove('active'); this.resetUploadVisuals(); };
+
+                this.dropIcon.onclick = () => this.fileIcon.click(); this.dropApk.onclick = () => this.fileApk.click();
+                
+                this.fileIcon.onchange = (e) => { if(e.target.files[0]) { document.getElementById('preview-icon-row').classList.remove('hidden'); this.dropIcon.classList.add('hidden'); } };
+                this.fileApk.onchange = (e) => { if(e.target.files[0]) { document.getElementById('preview-apk-row').classList.remove('hidden'); this.dropApk.classList.add('hidden'); } };
+
+                this.authForm.onsubmit = (e) => this.handleAuthSubmission(e);
+                
+                // DISPARADOR DIRECTO M�VIL SIN COMPLICACIONES
+                document.getElementById('btn-force-publish').onclick = () => this.executeDirectApkPublish();
+
+                document.getElementById('adm-btn-del-user').onclick = () => { Toast.show("Filtro aplicado."); document.getElementById('adm-del-username').value=''; };
+                document.getElementById('adm-btn-send-alert').onclick = () => this.executePublishAlertEngine();
+                document.getElementById('adm-btn-set-countdown').onclick = () => this.executeSetVideoTimer();
+                document.getElementById('adm-btn-force-reload').onclick = () => setDoc(doc(this.db, "system_control", "reload"), { trigger: Date.now() });
+                document.getElementById('adm-btn-massive-opt').onclick = () => { document.getElementById('main-scroll-area').scrollTop = 0; this.renderStoreGrids(); Toast.show("RAM Liberada."); };
+            }
+
+            resetUploadVisuals() { 
+                this.dropIcon.classList.remove('hidden'); this.dropApk.classList.remove('hidden'); 
+                document.getElementById('preview-icon-row').classList.add('hidden'); 
+                document.getElementById('preview-apk-row').classList.add('hidden'); 
+                document.getElementById('upload-progress-wrapper').classList.add('hidden');
+                this.fileIcon.value = ''; this.fileApk.value = '';
+                document.getElementById('apk-title').value = '';
+            }
+
+            changeViewEngine() {
+                if (this.currentView === 'admin-panel') {
+                    this.storeView.classList.add('hidden'); this.adminView.classList.remove('hidden');
+                } else {
+                    this.adminView.classList.add('hidden'); this.storeView.classList.remove('hidden'); this.renderStoreGrids();
+                }
+            }
+
+            async listenAuthLifecycle() {
+                onAuthStateChanged(this.auth, async (user) => {
+                    if (user) {
+                        this.authUiBtn.classList.add('hidden');
+                        this.profileBox.classList.remove('hidden');
+
+                        if (user.email === "dueno_jzstore@acceso-a-login.com" || user.email === "dueno_cloudstore@acceso-a-login.com" || user.email.includes('admin')) {
+                            this.isAdmin = true; 
+                            this.sidebarAdminSection.classList.remove('hidden');
+                            this.userBadge.textContent = "A"; 
+                            this.userBadge.classList.add('admin-active');
+                            this.userEditionId.textContent = "DUE�O SUPREMO";
+                        } else {
+                            this.isAdmin = false; 
+                            this.sidebarAdminSection.classList.add('hidden');
+                            this.userBadge.textContent = "U"; 
+                            this.userBadge.classList.remove('admin-active');
+                            this.userEditionId.textContent = "EDICI�N EST�NDAR";
+                        }
+                    } else {
+                        this.isAdmin = false;
+                        this.authUiBtn.classList.remove('hidden');
+                        this.profileBox.classList.add('hidden');
+                        this.sidebarAdminSection.classList.add('hidden');
+                    }
+                    await this.syncStoreRepository();
+                });
+            }
+
+            listenRealtimeTriggers() {
+                onSnapshot(doc(this.db, "system_control", "alert"), (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.data();
+                        document.getElementById('dynamic-alert-wrapper').innerHTML = `
+                            <div class="apk-alert-banner">
+                                <span class="material-icons" style="color:var(--accent-blue); font-size:32px;">notification_important</span>
+                                <div>
+                                    <h4 style="font-size:14px; font-weight:500; color:white;">${data.title}</h4>
+                                    <p style="font-size:12px; color:var(--text-secondary); margin-top:2px;">${data.desc}</p>
+                                </div>
+                                <span class="material-icons apk-alert-close" onclick="this.parentElement.remove()">close</span>
+                            </div>`;
+                    }
+                });
+
+                onSnapshot(doc(this.db, "system_control", "countdown"), (snapshot) => {
+                    if (snapshot.exists() && snapshot.data().targetTimestamp > Date.now()) {
+                        document.getElementById('yt-banner').classList.remove('hidden');
+                        this.runLiveCountdownClock(snapshot.data().targetTimestamp);
+                    } else {
+                        document.getElementById('yt-banner').classList.add('hidden');
+                    }
+                });
+
+                let init = false;
+                onSnapshot(doc(this.db, "system_control", "reload"), (snapshot) => {
+                    if (!init) { init = true; return; }
+                    setTimeout(() => window.location.reload(), 1000);
+                });
+            }
+
+            // FUNCI�N DE SUBIDA SIN TRABAS EN CELULARES
+            async executeDirectApkPublish() {
+                const iconFile = this.fileIcon.files ? this.fileIcon.files[0] : null;
+                const apkFile = this.fileApk.files ? this.fileApk.files[0] : null;
+
+                if (!apkFile) {
+                    alert(" Error: Selecciona el archivo .APK para poder subir la aplicaci�n.");
+                    return;
+                }
+
+                let title = document.getElementById('apk-title').value.trim();
+                if (!title) title = "Modificaci�n JZ Store";
+
+                const category = document.getElementById('apk-category').value;
+                const sizeMb = (apkFile.size / (1024 * 1024)).toFixed(1);
+                const trackId = Date.now();
+
+                const wrapper = document.getElementById('upload-progress-wrapper');
+                const bar = document.getElementById('upload-progress-bar');
+                const pct = document.getElementById('upload-pct-txt');
+                const stage = document.getElementById('upload-stage-txt');
+
+                wrapper.classList.remove('hidden');
+                document.getElementById('btn-force-publish').classList.add('disabled');
+
+                const apkPath = `jz_store/${trackId}_app_${apkFile.name}`;
+                const iconPath = iconFile ? `jz_store/${trackId}_icon_${iconFile.name}` : '';
+
+                try {
+                    let iconUrl = "https://www.gstatic.com/images/branding/product/2x/gg_play_store_96dp.png";
+
+                    if (iconFile) {
+                        stage.textContent = "Subiendo imagen de portada...";
+                        await uploadBytesResumable(ref(this.storage, iconPath), iconFile);
+                        iconUrl = await getDownloadURL(ref(this.storage, iconPath));
+                    }
+
+                    stage.textContent = "Subiendo archivo binario APK...";
+                    const task = uploadBytesResumable(ref(this.storage, apkPath), apkFile);
+
+                    task.on('state_changed', 
+                        (s) => {
+                            const p = (s.bytesTransferred / s.totalBytes) * 100;
+                            bar.style.width = `${p}%`;
+                            pct.textContent = `${Math.round(p)}%`;
+                        },
+                        (err) => { alert("Error Firebase Storage: " + err.message); },
+                        async () => {
+                            const apkUrl = await getDownloadURL(task.snapshot.ref);
+                            await addDoc(collection(this.db, "jz_store_apks"), {
+                                title, category, iconUrl, apkUrl, iconPath, apkPath, sizeMb, createdAt: new Date()
+                            });
+
+                            alert(" �Modificaci�n publicada con �xito para tus seguidores!");
+                            this.uploadBackdrop.classList.remove('active');
+                            document.getElementById('btn-force-publish').classList.remove('disabled');
+                            this.resetUploadVisuals();
+                            await this.syncStoreRepository();
+                        }
+                    );
+
+                } catch(e) {
+                    alert("Fallo cr�tico: " + e.message);
+                    document.getElementById('btn-force-publish').classList.remove('disabled');
+                }
+            }
+
+            async handleAuthSubmission(e) {
+                e.preventDefault();
+                const email = document.getElementById('auth-email').value.trim();
+                const pass = document.getElementById('auth-pass').value;
+                try {
+                    await signInWithEmailAndPassword(this.auth, email, pass);
+                    this.authBackdrop.classList.remove('active');
+                    this.authForm.reset();
+                    Toast.show("Acceso verificado con �xito.");
+                } catch(err) { Toast.show("Credenciales inv�lidas."); }
+            }
+
+            async executePublishAlertEngine() {
+                const title = document.getElementById('adm-alert-title').value.trim();
+                const desc = document.getElementById('adm-alert-desc').value.trim();
+                if(!title || !desc) return Toast.show("Campos incompletos.");
+                await setDoc(doc(this.db, "system_control", "alert"), { title, desc, createdAt: Date.now() });
+                Toast.show("Aviso lanzado.");
+                document.getElementById('adm-alert-title').value = ''; document.getElementById('adm-alert-desc').value = '';
+            }
+
+            async executeSetVideoTimer() {
+                const mins = parseInt(document.getElementById('adm-yt-minutes').value);
+                if(isNaN(mins) || mins <= 0) return Toast.show("Formato incorrecto.");
+                const targetTimestamp = Date.now() + (mins * 60 * 1000);
+                await setDoc(doc(this.db, "system_control", "countdown"), { targetTimestamp });
+                document.getElementById('adm-yt-minutes').value = '';
+                Toast.show("Contador activado.");
+            }
+
+            runLiveCountdownClock(endTime) {
+                const loop = () => {
+                    const diff = endTime - Date.now();
+                    if(diff <= 0) { document.getElementById('yt-banner').classList.add('hidden'); return; }
+                    document.getElementById('cd-hours').textContent = Math.floor(diff / 3600000).toString().padStart(2, '0');
+                    document.getElementById('cd-minutes').textContent = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
+                    document.getElementById('cd-seconds').textContent = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+                };
+                loop(); setInterval(loop, 1000);
+            }
+
+            async syncStoreRepository() {
+                const snap = await getDocs(query(collection(this.db, "jz_store_apks"), orderBy("createdAt", "desc")));
+                this.cachedApps = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                this.renderStoreGrids();
+            }
+
+            renderStoreGrids() {
+                if(this.currentView === 'admin-panel') return;
+                let list = this.cachedApps;
+                if (this.currentView !== 'inicio') list = list.filter(app => app.category === this.currentView);
+                if (this.searchQuery) list = list.filter(app => app.title.toLowerCase().includes(this.searchQuery));
+
+                if (this.currentView === 'inicio') {
+                    this.recContainer.classList.remove('hidden'); this.mainTitle.textContent = "Agregados recientemente";
+                    this.injectHtmlMatrix(this.recGrid, list.slice(0, 4)); this.injectHtmlMatrix(this.mainGrid, list);
+                } else {
+                    this.recContainer.classList.add('hidden'); this.mainTitle.textContent = this.currentView === 'juegos' ? "Todos los videojuegos" : "Todas las aplicaciones";
+                    this.injectHtmlMatrix(this.mainGrid, list);
+                }
+            }
+
+            injectHtmlMatrix(container, data) {
+                container.innerHTML = '';
+                if(data.length === 0) { container.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><span class="material-icons">folder_open</span><span>No hay elementos p�blicos a�n.</span></div>`; return; }
+                let html = '';
+                data.forEach(app => {
+                    html += `
+                        <div class="app-card">
+                            <div class="app-card-top">
+                                <img class="app-card-icon" src="${app.iconUrl}" alt="Icon" loading="lazy">
+                                <div class="app-card-meta"><span class="app-card-title">${app.title}</span><span class="app-card-category">${app.category}</span></div>
+                            </div>
+                            <div class="app-card-stats"><div class="app-rating"><span>4.9</span><span class="material-icons">star</span></div><span>${app.sizeMb || '25'} MB</span></div>
+                            <div class="app-card-bottom">
+                                <a class="btn-download" href="${app.apkUrl}" target="_blank">Instalar</a>
+                                ${this.isAdmin ? `<button class="btn-delete-app" data-id="${app.id}" data-icon="${app.iconPath}" data-apk="${app.apkPath}"><span class="material-icons">delete</span></button>` : ''}
+                            </div>
+                        </div>`;
+                });
+                container.insertAdjacentHTML('beforeend', html);
+                if(this.isAdmin) container.querySelectorAll('.btn-delete-app').forEach(b => b.onclick = (e) => this.handleApkPurgeAction(e.currentTarget));
+            }
+
+            async handleApkPurgeAction(btn) {
+                if(!confirm("�Destruir archivo permanentemente del servidor?")) return;
+                try {
+                    if(btn.getAttribute('data-icon')) await deleteObject(ref(this.storage, btn.getAttribute('data-icon')));
+                    await deleteObject(ref(this.storage, btn.getAttribute('data-apk')));
+                    await deleteDoc(doc(this.db, "jz_store_apks", btn.getAttribute('data-id')));
+                    Toast.show("Removido."); await this.syncStoreRepository();
+                } catch(e) { Toast.show("Error de purga."); }
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const store = new JZStoreSupremo(); store.listenAuthLifecycle();
+        });
+    </script>
+</body>
+</html>
